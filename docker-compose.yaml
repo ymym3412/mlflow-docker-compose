@@ -1,0 +1,88 @@
+version: '3'
+services:
+  waitfordb:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - postgresql
+    command: postgresql:5432
+
+  postgresql:
+    image: postgres:10.5
+    container_name: postgresql
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: mlflow-db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    hostname: postgresql
+    restart: always
+
+  mlflow:
+    build: .
+    container_name: mlflow
+    expose:
+      - 80
+      - 443
+    depends_on:
+      - postgresql
+      - waitfordb
+    volumes:
+      - ${CREDENTIALS_PATH}:/opt/application_default_credentials.json
+    environment:
+      DB_URI: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/mlflow-db
+      GCP_STORAGE_BUCKET: "${GCP_STORAGE_BUCKET}"
+      VIRTUAL_HOST: mlflow.localhost
+      VIRTUAL_PORT: 80
+      # VIRTUAL_PROTO: https
+      LETSENCRYPT_HOST: mlflow.localhost
+      LETSENCRYPT_EMAIL: example@gmail.com
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/application_default_credentials.json
+      GCLOUD_PROJECT: ${GCLOUD_PROJECT}
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./mlflow.localhost:/etc/nginx/htpasswd/mlflow.localhost
+      - html:/usr/share/nginx/html
+      - dhparam:/etc/nginx/dhparam
+      - vhost:/etc/nginx/vhost.d
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - conf:/etc/nginx/conf.d
+    environment: 
+      DEFAULT_HOST: mlflow.localhost
+      DHPARAM_GENERATION: "false"
+      HTTPS_METHOD: noredirect
+    labels:
+      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
+
+
+  letsencrypt-nginx-proxy-companion:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-proxy-lets-encrypt
+    restart: always
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - conf:/etc/nginx/conf.d
+      - certs:/etc/nginx/certs:rw
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+
+
+volumes:
+  certs:
+  html:
+  vhost:
+  dhparam:
+  conf:
