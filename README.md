@@ -17,6 +17,7 @@ $ gcloud auth application-default login
 In `docker-composa.yaml`, some parameters is loaded from `.env` file.  
 Set following parameters in `.env`.  
 
+- HOST: host name(If you don't use domain, any name is accepted. If use, speciy it)
 - POSTGRES_USER: postgresql db user
 - POSTGRES_PASSWORD: postgresql db user password
 - GCP_STORAGE_BUCKET: Google Cloud Storage bucket name mlflow will store artifact
@@ -24,6 +25,7 @@ Set following parameters in `.env`.
 - GCLOUD_PROJECT: GCP Project name you use
 
 ```
+HOST=mlflow.dev
 POSTGRES_USER=demo-user
 POSTGRES_PASSWORD=demo-password
 GCP_STORAGE_BUCKET=demo-bucket
@@ -35,10 +37,10 @@ GCLOUD_PROJECT=demo-project
 Because mlflow doesn't provide authentication, use NGINX proxy for basic authentication system.  
 
 ```sh
-$ sudo echo "{USER_NAME}:$(openssl passwd -apr1 {PASSWORD})" >> mlflow.localhost
+$ sudo echo "{USER_NAME}:$(openssl passwd -apr1 {PASSWORD})" >> ${HOST}
 ```
 
-`mlflow.localhost` is default host name.  
+`${HOST}` is host name you set in chapter 2.  
 
 ## 4. Build and deploy
 Build mlflow Dockerfilw, and then deploy applications.  

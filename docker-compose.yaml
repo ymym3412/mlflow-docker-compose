@@ -33,10 +33,9 @@ services:
     environment:
       DB_URI: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/mlflow-db
       GCP_STORAGE_BUCKET: "${GCP_STORAGE_BUCKET}"
-      VIRTUAL_HOST: mlflow.localhost
+      VIRTUAL_HOST: ${HOST}
       VIRTUAL_PORT: 80
-      # VIRTUAL_PROTO: https
-      LETSENCRYPT_HOST: mlflow.localhost
+      LETSENCRYPT_HOST: ${HOST}
       LETSENCRYPT_EMAIL: example@gmail.com
       GOOGLE_APPLICATION_CREDENTIALS: /opt/application_default_credentials.json
       GCLOUD_PROJECT: ${GCLOUD_PROJECT}
@@ -49,7 +48,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./mlflow.localhost:/etc/nginx/htpasswd/mlflow.localhost
+      - ./${HOST}:/etc/nginx/htpasswd/${HOST}
       - html:/usr/share/nginx/html
       - dhparam:/etc/nginx/dhparam
       - vhost:/etc/nginx/vhost.d
@@ -57,7 +56,7 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - conf:/etc/nginx/conf.d
     environment: 
-      DEFAULT_HOST: mlflow.localhost
+      DEFAULT_HOST: ${HOST}
       DHPARAM_GENERATION: "false"
       HTTPS_METHOD: noredirect
     labels:
