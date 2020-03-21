@@ -46,8 +46,8 @@ $ sudo echo "{USER_NAME}:$(openssl passwd -apr1 {PASSWORD})" >> ${HOST}
 Build mlflow Dockerfilw, and then deploy applications.  
 
 ```sh
-$ docker-compose build
-$ docker-compose up -d
+$ sudo docker-compose build
+$ sudo docker-compose up -d
 ```
 
 # Client
@@ -58,3 +58,14 @@ Set following environment parameters in local,  same as [3. Set up NGINX Basic A
 - MLFLOW_TRACKING_PASSWORD
 
 See also https://www.mlflow.org/docs/latest/tracking.html#logging-to-a-tracking-server
+
+# Update MLflow version
+If you want update MLflow, stop container and remove images, and then rebuild MLflow container.  
+
+```sh
+$ sudo docker-compose stop mlflow && \
+  sudo docker-compose rm mlflow && \
+  docker images mlflow-docker-compose_mlflow --format '{{.ID}}'|xargs docker rmi && \
+  sudo docker-compose build && \
+  sudo docker-compose up -d
+```
