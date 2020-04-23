@@ -54,6 +54,9 @@ If you click on one of run, deteil will open. And you can also find artifacts at
 
 Find settings in `.env` if you need to change.
 
+- On the client (ML application) side, `ExperimentRecorder` class wraps things essentially needed: environment variables, starting MLflow and etc.
+- The `sample_elasticnet_wine.py` explains how you can use in your ML apps.
+
 ## Trouble shooting
 
 Stop containers first.
