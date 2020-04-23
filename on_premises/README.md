@@ -17,7 +17,7 @@ You can quickly setup your MLflow on-premises environment with this example.
     Edit `.env` if you want to change folder, it's `/tmp/artifacts` by default.
 
     ```sh
-    mkdir tmp/artifacts
+    mkdir /tmp/artifacts
     ```
 
 3. Get your mlflow server up and running. This takes time.
@@ -30,7 +30,7 @@ You can quickly setup your MLflow on-premises environment with this example.
 
     Open server URI. It's `http://your-server-ip-or-host-name:5000/`.
 
-    Now run an example.
+    Now let's run an example, this will run for all convinations of `alpha` and `l1_ratio` parameters.
 
     ```sh
     python sample_elasticnet_wine.py alpha=0.2,0.3,0.4,0.5,0.6,0.7 l1_ratio=0.4,0.5,0.6 -m
@@ -50,7 +50,7 @@ If you click on one of run, deteil will open. And you can also find artifacts at
 
 - User ID/password are basically fixed, these are used only for postgresql.
 - Port is set to 5000 by default.
-- Artifact folder is a little tricky, it has to be the same pathname between local environment and on the server running on docker. So it's set to `/tmp/artifacts` by default. This is kind of workaround to follow behavior of MLflow.
+- Artifact folder is a little tricky, it has to be the same pathname between on the local environment and on the server running on docker. So it's set to `/tmp/artifacts` by default. This is kind of workaround to follow behavior of MLflow.
 
 Find settings in `.env` if you need to change.
 
