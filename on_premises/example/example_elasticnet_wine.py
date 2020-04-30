@@ -1,5 +1,5 @@
 """
-Sample based on the original mlflow/examples/sklearn_elasticnet_wine/train.py,
+Example based on the original mlflow/examples/sklearn_elasticnet_wine/train.py,
 edited for explaining how to work with things.
 
 URL: https://github.com/mlflow/mlflow/blob/master/examples/sklearn_elasticnet_wine/train.py
@@ -80,12 +80,12 @@ def train(cwd, logger, in_alpha, in_l1_ratio):
     return lr, rmse, mae, r2
 
 
-@hydra.main(config_path='sample/config.yaml')
+@hydra.main(config_path='config.yaml')
 def main(cfg: DictConfig) -> None:
-    """Main part of this sample."""
+    """Main part of this example."""
 
     ### 1. This set environment variables, starts a run and gets logger.
-    recorder = ExperimentRecorder('sample_elasticnet_wine',
+    recorder = ExperimentRecorder('example_elasticnet_wine',
         run_name=f'alpha={cfg.alpha},l1={cfg.l1_ratio}')
     org_dir, run_dir, logger = recorder.get_things()  # Logging settings are all done by Hydra.
     logger.info(f'cwd was {org_dir}...')              # Note that Hydra changes cwd.
@@ -106,7 +106,7 @@ def main(cfg: DictConfig) -> None:
     mlflow.log_artifact('.hydra/config.yaml')
     mlflow.log_artifact('.hydra/hydra.yaml')
     mlflow.log_artifact('.hydra/overrides.yaml')
-    mlflow.log_artifact('sample_elasticnet_wine.log')
+    mlflow.log_artifact('example_elasticnet_wine.log')
 
     # 4. Let's finish.
     recorder.end_run()

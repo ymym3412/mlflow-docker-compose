@@ -33,18 +33,19 @@ You can quickly setup your MLflow on-premises environment with this example.
     Now let's run an example, this will run for all convinations of `alpha` and `l1_ratio` parameters.
 
     ```sh
-    python sample_elasticnet_wine.py alpha=0.2,0.3,0.4,0.5,0.6,0.7 l1_ratio=0.4,0.5,0.6 -m
+    cd example
+    python example_elasticnet_wine.py alpha=0.2,0.3,0.4,0.5,0.6,0.7 l1_ratio=0.4,0.5,0.6 -m
     ```
 
     If it runs successfully, reload browser and click on `sample_elasticnet_wine`:
 
-    ![result image](sample/on_pre_1.png)
+    ![result image](images/on_pre_1.png)
 
 ### Where are your artifacts on browser?
 
 If you click on one of run, deteil will open. And you can also find artifacts at the bottom of the page.
 
-![result image](sample/on_pre_2.png)
+![result image](images/on_pre_2.png)
 
 ## Basic design
 
@@ -55,7 +56,7 @@ If you click on one of run, deteil will open. And you can also find artifacts at
 Find settings in `.env` if you need to change.
 
 - On the client (ML application) side, `ExperimentRecorder` class wraps things essentially needed: environment variables, starting MLflow and etc.
-- The `sample_elasticnet_wine.py` explains how you can use in your ML apps.
+- The `example/example_elasticnet_wine.py` explains how you can use in your ML apps.
 
 ## Trouble shooting
 
