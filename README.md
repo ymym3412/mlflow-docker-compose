@@ -69,3 +69,8 @@ $ sudo docker-compose stop mlflow && \
   sudo docker-compose build && \
   sudo docker-compose up -d
 ```
+
+# On-Premises version
+
+In case you'd like to run MLflow on your on-premises server, `on_premises` folder is for you.
+Batteries (sample setting files) included.
