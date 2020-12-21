@@ -4,7 +4,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-mlflow db upgrade $DB_URI
+# uncomment below when you see any issue with db...
+# https://github.com/ymym3412/mlflow-docker-compose/issues/4
+# mlflow db upgrade $DB_URI
 
 mlflow server \
     --backend-store-uri $DB_URI \
