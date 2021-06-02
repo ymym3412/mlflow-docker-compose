@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "docker+python+ssh+kite"
+version = "0.1.0"
+description = ""
+authors = ["yamadax"]
+
+[tool.poetry.dependencies]
+python = "^3.7,<3.8"
+mlflow = "^1.17.0"
+jupyter = "^1.0.0"
+jupyterlab = "^3.0.16"
+lightgbm = "^3.2.1"
+xgboost = "^1.4.2"
+matplotlib = "^3.4.2"
+psycopg2-binary = "^2.8.6"
+boto3 = "^1.17.85"
+prefect = "^0.14.20"
+graphviz = "^0.16"
+seaborn = "^0.11.1"
+dask = "^2021.5.1"
+
+[tool.poetry.dev-dependencies]
+black = "^21.5b2"
+pytest = "^6.2.4"
+jupyterlab-code-formatter = "^1.4.10"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
