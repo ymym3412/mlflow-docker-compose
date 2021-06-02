@@ -166,3 +166,6 @@ Thumbs.db
 
 
 # End of https://www.toptal.com/developers/gitignore/api/jupyternotebooks,python
+
+/artifacts/
+/db/
