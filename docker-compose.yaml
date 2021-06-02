@@ -1,14 +1,11 @@
 version: '3'
 services:
-  waitfordb:
-    image: dadarek/wait-for-dependencies
-    depends_on:
-      - postgresql
-    command: postgresql:5432
-
   postgresql:
     image: postgres:10.5
     container_name: postgresql
+    volumes:
+      - ./db/postgres:/var/lib/postgresql/data
+      - ./db/logs:/var/log
     ports:
       - 5432:5432
     environment:
@@ -16,72 +13,74 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: mlflow-db
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+      PGDATA: /var/lib/postgresql/data/pgdata
     hostname: postgresql
     restart: always
+    networks:
+      - nginx_network
 
   mlflow:
-    build: .
+    build:
+      context: .
+      dockerfile: mlflow/Dockerfile
+      args:
+        - PYTHON_VERSION=${PYTHON_VERSION}
+        - DEBIAN_VERSION=${DEBIAN_VERSION}
     container_name: mlflow
-    expose:
-      - 80
-      - 443
+    environment:
+      # waitするホストを指定する．
+      # 複数のwait_hostを指定することもできます．(MySQLだけでなくRedisの起動を待ちたい時なども便利です．)
+      WAIT_HOSTS: postgresql:5432
+    volumes:
+      - ${MOUNT_PATH}:/home/jovyan/work
+    ports:
+      - 5000:5000
     depends_on:
       - postgresql
-      - waitfordb
-    volumes:
-      - ${CREDENTIALS_PATH}:/opt/application_default_credentials.json
-    environment:
-      DB_URI: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/mlflow-db
-      GCP_STORAGE_BUCKET: "${GCP_STORAGE_BUCKET}"
-      VIRTUAL_HOST: ${HOST}
-      VIRTUAL_PORT: 80
-      LETSENCRYPT_HOST: ${HOST}
-      LETSENCRYPT_EMAIL: example@gmail.com
-      GOOGLE_APPLICATION_CREDENTIALS: /opt/application_default_credentials.json
-      GCLOUD_PROJECT: ${GCLOUD_PROJECT}
+    command: bash -c "mlflow server --backend-store-uri ${DB_URL} --default-artifact-root ${ARTIFACT_PATH} --host 0.0.0.0 --port 5000"
+    networks:
+      - nginx_network
 
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: nginx-proxy
+  jupyter:
+    build:
+      context: .
+      dockerfile: jupyter/Dockerfile
+      args:
+        - PYTHON_VERSION=${PYTHON_VERSION}
+        - DEBIAN_VERSION=${DEBIAN_VERSION}
+    image: albert/jupyter-mlflow:${PYTHON_VERSION}
+    container_name: ${USER_NAME}-mlflow-jupyter-container
+    hostname: ${USER_NAME}-jupyter
+    ###############################################
+    # リソースコントロール
+    mem_limit: ${CONTAINER_LIMIT_MEMORY}
+    # m: メガ g: ギガ　(メモリサイズ - ホストOS(ubuntu)に必要量2GB)/ユーザー数　で設定
+    cpu_count: ${CONTAINER_USE_CPU}
+    # cpu_count = (CPUコア数-1)VMのdockerユーザー数 を設定する
+    ###############################################
     restart: always
+    volumes:
+      - ${MOUNT_PATH}:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    environment:
+      TZ: Asia/Tokyo
+    # ポートの設定(ホスト:コンテナ)
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./${HOST}:/etc/nginx/htpasswd/${HOST}
-      - html:/usr/share/nginx/html
-      - dhparam:/etc/nginx/dhparam
-      - vhost:/etc/nginx/vhost.d
-      - certs:/etc/nginx/certs:ro
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - conf:/etc/nginx/conf.d
-    environment: 
-      DEFAULT_HOST: ${HOST}
-      DHPARAM_GENERATION: "false"
-      HTTPS_METHOD: noredirect
-    labels:
-      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
-
-
-  letsencrypt-nginx-proxy-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: nginx-proxy-lets-encrypt
-    restart: always
+      - "${JUPYTER_PORT_NO}:${JUPYTER_PORT_NO}"
     depends_on:
-      - nginx-proxy
-    volumes:
-      - conf:/etc/nginx/conf.d
-      - certs:/etc/nginx/certs:rw
-      - vhost:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      NGINX_PROXY_CONTAINER: nginx-proxy
-
-
-volumes:
-  certs:
-  html:
-  vhost:
-  dhparam:
-  conf:
+      - postgresql
+      - mlflow
+    command: bash -c "
+      poetry run jupyter lab
+        --ip=0.0.0.0
+        --port=${JUPYTER_PORT_NO}
+        --allow-root
+        --no-browser
+        --NotebookApp.notebook_dir='/home/jovyan/work'
+        --NotebookApp.token=''"
+    networks:
+      - nginx_network
+networks:
+  nginx_network:
+    driver: bridge
