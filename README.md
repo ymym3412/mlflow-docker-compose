@@ -5,7 +5,6 @@ Deploy mlflow with docker-compose
 In `docker-composa.yaml`, some parameters is loaded from `.env` file.
 Set following parameters in `.env`.
 
-
 ```
 # docker-compose config
 USER_NAME = <user name>
