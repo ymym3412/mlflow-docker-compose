@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "mlflow_image"
+version = "0.1.0"
+description = "mlflowサーバーに必要なパッケージ一式"
+authors = ["yamadax"]
+
+[tool.poetry.dependencies]
+python = "^3.7,<3.8"
+psycopg2-binary = "^2.8.6"
+mlflow = "^1.17.0"
+SQLAlchemy = "^1.4.17"
+boto3 = "^1.17.86"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
