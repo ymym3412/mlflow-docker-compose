@@ -38,3 +38,11 @@ Build mlflow Dockerfilw, and then deploy applications.
 $ docker-compose build
 $ docker-compose up -d
 ```
+
+## 3. access jupyter and mlflow UI
+
+```
+http://localhost:8819
+http://localhost:5000
+```
+
