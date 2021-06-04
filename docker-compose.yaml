@@ -28,8 +28,8 @@ services:
         - DEBIAN_VERSION=${DEBIAN_VERSION}
     container_name: mlflow
     environment:
-      WAIT_HOSTS: postgresql:${POSTGRES_POERT}, minio:9000
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      WAIT_HOSTS: postgresql:${POSTGRES_POERT}, minio:${MINIO_PORT}
+      MLFLOW_S3_ENDPOINT_URL: ${MINIO_URL}
       AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
       AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
     volumes:
@@ -51,7 +51,6 @@ services:
         - DEBIAN_VERSION=${DEBIAN_VERSION}
     image: albert/jupyter-mlflow:${PYTHON_VERSION}
     container_name: ${USER_NAME}-mlflow-jupyter-container
-    hostname: ${USER_NAME}-jupyter
     ###############################################
     # リソースコントロール
     mem_limit: ${CONTAINER_LIMIT_MEMORY}
@@ -66,7 +65,7 @@ services:
       TZ: Asia/Tokyo
       AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
       AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_S3_ENDPOINT_URL: ${MINIO_URL}
     # ポートの設定(ホスト:コンテナ)
     ports:
       - "${JUPYTER_PORT_NO}:${JUPYTER_PORT_NO}"
@@ -88,7 +87,7 @@ services:
   minio:
     image: minio/minio
     ports:
-      - 9000:9000
+      - ${MINIO_PORT}:9000
     restart: always
     volumes:
       - ${MINIO_MOUNT_PATH}:/export
@@ -106,7 +105,7 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}) do echo 'try to create buckets...' && sleep 1; done;
+      until (/usr/bin/mc config host add myminio ${MINIO_URL} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}) do echo 'try to create buckets...' && sleep 1; done;
       /usr/bin/mc mb myminio/default;
       /usr/bin/mc policy download myminio/default;
       exit 0;
