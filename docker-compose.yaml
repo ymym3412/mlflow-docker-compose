@@ -28,7 +28,10 @@ services:
         - DEBIAN_VERSION=${DEBIAN_VERSION}
     container_name: mlflow
     environment:
-      WAIT_HOSTS: postgresql:${POSTGRES_POERT}
+      WAIT_HOSTS: postgresql:${POSTGRES_POERT}, minio:9000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
     volumes:
       - ${MOUNT_PATH}:/home/jovyan/work
     ports:
@@ -60,9 +63,10 @@ services:
     volumes:
       - ${MOUNT_PATH}:/home/jovyan/work
     environment:
-      - JUPYTER_ENABLE_LAB=yes
-    environment:
       TZ: Asia/Tokyo
+      AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
     # ポートの設定(ホスト:コンテナ)
     ports:
       - "${JUPYTER_PORT_NO}:${JUPYTER_PORT_NO}"
@@ -79,6 +83,37 @@ services:
         --NotebookApp.token=''"
     networks:
       - nginx_network
+
+  # artifact保存用のストレージ
+  minio:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    restart: always
+    volumes:
+      - ${MINIO_MOUNT_PATH}:/export
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    command: server /export
+    networks:
+      - nginx_network
+
+  # minioコンテナ起動時にデフォルトのバケットを自動作成する
+  defaultbucket:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}) do echo 'try to create buckets...' && sleep 1; done;
+      /usr/bin/mc mb myminio/default;
+      /usr/bin/mc policy download myminio/default;
+      exit 0;
+      "
+    networks:
+      - nginx_network
+
 networks:
   nginx_network:
     driver: bridge
