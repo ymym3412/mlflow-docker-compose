@@ -14,7 +14,8 @@ RUN apt-get update -y \
     && apt-get install -y \
     wget \
     curl \
-    graphviz
+    graphviz \
+    git
 # install nodejs
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
     && apt-get install -y nodejs
